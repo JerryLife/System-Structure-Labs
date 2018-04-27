@@ -22,6 +22,69 @@ int is_transpose(int M, int N, int A[N][M], int B[M][N]);
 char transpose_submit_desc[] = "Transpose submission";
 void transpose_submit(int M, int N, int A[N][M], int B[M][N])
 {
+    if (M == 32 && N == 32) {
+        for (int i = 0; i < 4; ++i) {
+            for (int j = 0; j < 4; ++j) {
+                for (int k = 0; k < 8; ++k) {
+                    int x_pos, y_pos, val;
+                    for (int l = 0; l < 8; ++l) {
+                        int tmp = A[i*8+k][j*8+l];
+                        if (k == l) {
+                            x_pos = i * 8 + k;
+                            y_pos = j * 8 + l;
+                            val = tmp;
+                        }
+                        else {
+                            B[j*8+l][i*8+k] = tmp;
+                        }
+                    }
+                    B[y_pos][x_pos] = val;
+                }
+            }
+        }
+    }
+    else if (M == 64 && N == 64) {
+        for (int i = 0; i < 16; ++i) {
+            for (int j = 0; j < 16; ++j) {
+                for (int k = 0; k < 4; ++k) {
+                    int x_pos, y_pos, val;
+                    for (int l = 0; l < 4; ++l) {
+                        int tmp = A[i*4+k][j*4+l];
+                        if (k == l) {
+                            x_pos = i * 4 + k;
+                            y_pos = j * 4 + l;
+                            val = tmp;
+                        }
+                        else {
+                            B[j*4+l][i*4+k] = tmp;
+                        }
+                    }
+                    B[y_pos][x_pos] = val;
+                }
+            }
+        }
+    }
+    else {
+        for (int i = 0; i < 67; i += 16) {
+            for (int j = 0; j < 61; j += 16) {
+                for (int k = i; k < i+16 && k < 67; ++k) {
+                    int x_pos, val;
+                    for (int l = j; l < j+16 && l < 61; ++l) {
+                        int tmp = A[k][l];
+                        if (k == l) {
+                            x_pos = k;
+                            val = tmp;
+                        }
+                        else {
+                            B[l][k] = tmp;
+                        }
+                    }
+                    if (i == j)
+                    B[x_pos][x_pos] = val;
+                }
+            }
+        }
+    }
 }
 
 /* 

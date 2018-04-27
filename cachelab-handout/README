@@ -10,7 +10,7 @@ Before running the autograders, compile your code:
 Check the correctness of your simulator:
     linux> ./test-csim
 
-Check the correctness and performance of your transpose functions:
+Check the correctness and performance of your transpose functions:  # 300 1300 2000
     linux> ./test-trans -M 32 -N 32
     linux> ./test-trans -M 64 -N 64
     linux> ./test-trans -M 61 -N 67

@@ -29,7 +29,7 @@
 
 //#define DEBUG_ON 
 #define ADDRESS_LENGTH 64
-
+// #define DISPLAY_DETAIL
 // #define DEBUG_ON
 
 /* Type: Memory address */
@@ -119,7 +119,7 @@ void accessData(mem_addr_t addr)
     cache_set_t cache_set = cache[set_index];
 
     // find tag
-    int hit;
+    int hit = 0;
     for (i = 0; i < S; ++i) {
         if (set_index == i) {
             for (j = 0; j < E; ++j) {
@@ -128,25 +128,36 @@ void accessData(mem_addr_t addr)
                     hit = 1;
                     hit_count++;
                     cache[i][j].lru = 0;
-                    return;
+#ifdef DISPLAY_DETAIL
+                    printf("Hit\n");
+#endif
+                    break;
                 }
             }
             if (!hit) {
                 // miss
+#ifdef DISPLAY_DETAIL
+                printf("Miss\n");
+#endif
                 miss_count++;
                 int has_space = 0;
-                int max_lru_i = 0;
                 for (j = 0; j < E; ++j) {
                     if (!cache[i][j].valid) {
                         has_space = 1;
                         cache[i][j].valid = 1;
                         cache[i][j].tag = tag;
                         cache[i][j].lru = 0;
+                        break;
                     }
+                }
 
-                    // find max lru value
-                    if (cache[i][j].lru > max_lru_i) {
+                // find max lru value
+                int max_lru_i = 0;
+                int max_lru = 0;
+                for (j = 0; j < E; ++j) {
+                    if (cache[i][j].lru > max_lru) {
                         max_lru_i = j;
+                        max_lru = cache[i][j].lru;
                     }
                 }
 
@@ -155,6 +166,9 @@ void accessData(mem_addr_t addr)
                     eviction_count++;
                     cache[i][max_lru_i].tag = tag;
                     cache[i][max_lru_i].lru = 0;
+#ifdef DISPLAY_DETAIL
+                    printf("Evicted\n");
+#endif
                 }
             }
 
@@ -178,7 +192,7 @@ void replayTrace(char* trace_fn)
     FILE* trace_fp = fopen(trace_fn, "r");
 
     if (!trace_fp) {
-        printf("Cannot open file %s", trace_fp);
+        printf("Cannot open file\n");
     }
 
     int size;
